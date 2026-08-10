@@ -65,9 +65,16 @@ def run_banking_system():
 run_banking_system()  
 '''
 
+'''
+#Mangling Mechanism - to prevent name clashes between classes
+#Prevents name clashes: It stops subclasses from accidentally overriding parent class attributes.
+#Protects internal state: It acts as a safety signal to prevent external code from modifying critical data.
+#Enforces pseudo-privacy: Python does not have true "private" variables, so it uses mangling to hide them.
+
+'''
 
 class BankAccount:
-
+    
     # Private attributes
     __account_number = ""
     __account_name = ""
