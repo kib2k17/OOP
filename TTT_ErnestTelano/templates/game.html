@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tic Tac Toe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<nav>
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="container game-container">
+
+    <h1>Tic Tac Toe</h1>
+
+    <p class="game-code">
+        Game Code: {{ game_code }}
+    </p>
+
+    <p id="status" class="game-status">
+        Loading game...
+    </p>
+
+    <div class="board">
+
+        <button class="cell" onclick="makeMove(0)"></button>
+        <button class="cell" onclick="makeMove(1)"></button>
+        <button class="cell" onclick="makeMove(2)"></button>
+
+        <button class="cell" onclick="makeMove(3)"></button>
+        <button class="cell" onclick="makeMove(4)"></button>
+        <button class="cell" onclick="makeMove(5)"></button>
+
+        <button class="cell" onclick="makeMove(6)"></button>
+        <button class="cell" onclick="makeMove(7)"></button>
+        <button class="cell" onclick="makeMove(8)"></button>
+
+    </div>
+
+    <div class="game-actions">
+        <a href="{{ url_for('matchmaking') }}">Back to Game Search</a>
+    </div>
+
+</div>
+
+<script>
+
+function updateGame() {
+
+    fetch("/game_state/{{ game_code }}")
+    .then(response => response.json())
+    .then(data => {
+
+        if (!data.success) {
+            document.getElementById("status").innerText =
+                "Game not found.";
+            return;
+        }
+
+        let cells = document.querySelectorAll(".cell");
+
+        for (let i = 0; i < 9; i++) {
+            cells[i].innerText = data.board[i];
+        }
+
+        if (!data.ready) {
+
+            document.getElementById("status").innerText =
+                "Waiting for another player...";
+
+            return;
+        }
+
+        if (data.finished) {
+
+            if (data.winner == "D") {
+
+                document.getElementById("status").innerText =
+                    "Draw!";
+
+            } else {
+
+                document.getElementById("status").innerText =
+                    data.winner + " wins!";
+
+            }
+
+            return;
+        }
+
+        if (data.current_player == data.your_symbol) {
+
+            document.getElementById("status").innerText =
+                "Your turn";
+
+        } else {
+
+            document.getElementById("status").innerText =
+                "Opponent's turn";
+
+        }
+
+    });
+
+}
+
+function makeMove(position) {
+
+    fetch("/game_move/{{ game_code }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            position: position
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        if (!data.success) {
+            alert(data.message);
+        }
+
+        updateGame();
+
+    });
+
+}
+
+updateGame();
+
+setInterval(updateGame, 1000);
+
+</script>
+
+</body>
+</html>
