@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Dashboard</h2>
+<br>
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>{{ total_rooms }}</h3>
+        <p>Total Rooms</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ occupied }}</h3>
+        <p>Occupied Rooms</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ guests_count }}</h3>
+        <p>Active Guests</p>
+    </div>
+</div>
+{% endblock %}
