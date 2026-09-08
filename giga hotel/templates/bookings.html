@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Bookings & Reservations</h2>
+<br>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Booking ID</th>
+            <th>Guest Name</th>
+            <th>Assigned Room</th>
+            <th>Booking Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+        <tr>
+            <td>{{ booking.id }}</td>
+            <td>{{ booking.name }}</td>
+            <td>Room {{ booking.room }}</td>
+            <td><span class="badge">{{ booking.status }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No active bookings found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

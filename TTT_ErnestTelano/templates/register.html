@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<nav>
+    <ul>
+        <li><a href="{{ url_for('login') }}">Login</a></li>
+        <li><a href="{{ url_for('register') }}">Register</a></li>
+    </ul>
+</nav>
+
+
+<div class="container" style="max-width: 500px;">
+
+    <h1>Create Account</h1>
+
+    <p class="subtitle">
+        Create an account to start playing.
+    </p>
+
+
+    {% if error %}
+
+        <p class="message">
+            {{ error }}
+        </p>
+
+    {% endif %}
+
+
+    <form method="POST">
+
+        <label>Username</label>
+
+        <input
+            type="text"
+            name="username"
+            required
+        >
+
+
+        <label>Password</label>
+
+        <input
+            type="password"
+            name="password"
+            required
+        >
+
+
+        <label>Confirm Password</label>
+
+        <input
+            type="password"
+            name="confirm_password"
+            required
+        >
+
+
+        <button
+            type="submit"
+            style="width: 100%;"
+        >
+            Create Account
+        </button>
+
+    </form>
+
+
+    <p class="subtitle">
+
+        Already have an account?
+
+        <a href="{{ url_for('login') }}">
+            Login here
+        </a>
+
+    </p>
+
+</div>
+
+</body>
+</html>

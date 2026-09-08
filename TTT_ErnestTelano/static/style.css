@@ -1,0 +1,288 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #eeeeee;
+    color: #222;
+}
+
+/* Navigation */
+
+nav {
+    background: #1d1d1d;
+    padding: 16px 25px;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+}
+
+nav li {
+    display: inline;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+nav a:hover {
+    color: #bbbbbb;
+}
+
+/* Main container */
+
+.container {
+    width: 90%;
+    max-width: 800px;
+    margin: 35px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    box-sizing: border-box;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Headings */
+
+h1 {
+    text-align: center;
+    margin: 0 0 25px;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+h3 {
+    margin-top: 0;
+}
+
+/* Buttons */
+
+button {
+    border: none;
+    background: #222;
+    color: white;
+    padding: 11px 20px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background: #444;
+}
+
+/* Inputs */
+
+input {
+    width: 100%;
+    padding: 11px;
+    margin-top: 6px;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+    border: 1px solid #bbb;
+    border-radius: 7px;
+    font-size: 14px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #555;
+}
+
+/* Forms */
+
+form {
+    max-width: 400px;
+    margin: 20px auto;
+}
+
+form button {
+    width: 100%;
+}
+
+/* Links */
+
+a {
+    color: #222;
+}
+
+a:hover {
+    color: #666;
+}
+
+/* Messages */
+
+.message {
+    padding: 12px;
+    margin-bottom: 18px;
+    background: #eeeeee;
+    border: 1px solid #d5d5d5;
+    border-radius: 7px;
+    text-align: center;
+}
+
+/* Cards */
+
+.card {
+    background: #f8f8f8;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    padding: 22px;
+    margin-bottom: 18px;
+}
+
+.card p {
+    color: #555;
+    line-height: 1.5;
+}
+
+.card a {
+    text-decoration: none;
+}
+
+/* Form links */
+
+.form-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Back links */
+
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 22px;
+}
+
+/* Game */
+
+.game-container {
+    max-width: 600px;
+    text-align: center;
+}
+
+.game-code {
+    font-size: 15px;
+    color: #555;
+    margin: -10px 0 18px;
+}
+
+.game-status {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 24px;
+}
+
+/* Game board */
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 8px;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.cell {
+    width: 100px;
+    height: 100px;
+    padding: 0;
+    background: #f8f8f8;
+    border: 2px solid #333;
+    border-radius: 8px;
+    color: #111;
+    font-size: 42px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cell:hover {
+    background: #e5e5e5;
+}
+
+/* Game bottom link */
+
+.game-actions {
+    margin-top: 25px;
+}
+
+.game-actions a {
+    text-decoration: none;
+    color: #444;
+}
+
+.game-actions a:hover {
+    color: #777;
+}
+
+/* Tables */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+}
+
+th {
+    background: #222;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background: #f7f7f7;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    nav {
+        padding: 15px;
+    }
+
+    nav ul {
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    nav a {
+        font-size: 14px;
+    }
+
+    .container {
+        width: 92%;
+        padding: 22px;
+        margin: 22px auto;
+    }
+
+    .board {
+        grid-template-columns: repeat(3, 80px);
+        grid-template-rows: repeat(3, 80px);
+        gap: 6px;
+    }
+
+    .cell {
+        width: 80px;
+        height: 80px;
+        font-size: 34px;
+    }
+}
