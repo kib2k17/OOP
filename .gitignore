@@ -1,0 +1,25 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+#Virtual environment
+.venv/
+venv/
+
+#Environment Variables & Secrets
+.env
+
+#Local Database
+*.sqlite3
+
+# Static & Build Files
+staticfiles/
+
+# Testing & Code Coverage
+.pytest_cache/
+coverage.xml
+htmlcov/
+
+#Editor & System Profiles
+.vscode/settings.json
+.DS_Store
