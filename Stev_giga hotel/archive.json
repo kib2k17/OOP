@@ -1,0 +1,96 @@
+{
+    "deleted_rooms": [
+        {
+            "id": "134",
+            "type": "gigachad",
+            "price": 1233.0,
+            "status": "Available"
+        },
+        {
+            "id": "104",
+            "type": "Presidential Suite",
+            "price": 350,
+            "status": "Maintenance"
+        },
+        {
+            "id": "1323",
+            "type": "123",
+            "price": 1323.0,
+            "status": "Available"
+        },
+        {
+            "id": "asd",
+            "type": "asd",
+            "price": 123.0,
+            "status": "Available"
+        },
+        {
+            "id": "105",
+            "type": "asd",
+            "price": 1434.0,
+            "status": "Available"
+        },
+        {
+            "id": "105",
+            "type": "asd",
+            "price": 12334.0,
+            "status": "Available"
+        }
+    ],
+    "deleted_guests": [
+        {
+            "id": "G-1003",
+            "name": "Flores, Isabel",
+            "email": "iflores@example.com",
+            "room": "N/A",
+            "status": "Checked Out"
+        },
+        {
+            "id": "G-1004",
+            "name": "asda",
+            "email": "henrymaratas046@gmail.com",
+            "room": "134",
+            "status": "Checked In"
+        },
+        {
+            "id": "G-1003",
+            "name": "stev",
+            "email": "henrymaratas046@gmail.com",
+            "room": "N/A",
+            "status": "Checked In"
+        },
+        {
+            "id": "G-1003",
+            "name": "stev",
+            "email": "henrymaratas046@gmail.com",
+            "room": "123",
+            "status": "Checked In"
+        },
+        {
+            "id": "G-1004",
+            "name": "awdawd",
+            "email": "awdaw@dawdawd",
+            "room": "103",
+            "status": "Checked In"
+        }
+    ],
+    "deleted_foods": [
+        {
+            "id": "F-1005",
+            "name": "Chocolate Lava Cake",
+            "category": "Desserts",
+            "price": 8.5,
+            "status": "Out of Stock"
+        }
+    ],
+    "deleted_events": [
+        {
+            "id": "E-1003",
+            "title": "Annual Executive Meeting",
+            "date": "2026-12-05",
+            "time": "01:30 PM",
+            "location": "Conference Room A",
+            "status": "Upcoming"
+        }
+    ]
+}
