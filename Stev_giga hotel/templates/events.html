@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Event Management</h2>
+<br>
+
+<div class="form-card">
+    <form action="{{ url_for('events') }}" method="POST">
+        <input type="hidden" name="action" value="add">
+        <div class="form-group">
+            <input type="text" name="title" class="form-control" placeholder="Event Title" required>
+        </div>
+        <div class="form-group">
+            <input type="date" name="date" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <input type="time" name="time" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <input type="text" name="location" class="form-control" placeholder="Venue / Location" required>
+        </div>
+        <div class="form-group">
+            <select name="status" class="form-control">
+                <option value="Upcoming">Upcoming</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+        </div>
+        <button type="submit" class="btn">Add Event</button>
+    </form>
+</div>
+
+<div class="toolbar">
+    <form method="GET" action="{{ url_for('events') }}" class="search-bar" style="display: flex; gap: 8px;">
+        <input type="text" name="search" placeholder="Search events..." value="{{ request.args.get('search', '') }}">
+        <button type="submit" class="btn">Filter</button>
+        {% if request.args.get('search') %}
+            <a href="{{ url_for('events') }}" class="btn" style="background-color: #25a27a; text-decoration: none; display: inline-flex; align-items: center;">Refresh</a>
+        {% endif %}
+    </form>
+</div>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for event in events %}
+        <tr>
+            <td>{{ event.id }}</td>
+            <td>{{ event.title }}</td>
+            <td>{{ event.date }}</td>
+            <td>{{ event.time }}</td>
+            <td>{{ event.location }}</td>
+            <td><span class="status-badge {{ event.status | lower }}">{{ event.status }}</span></td>
+            <td>
+                <form action="{{ url_for('events') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete {{ event.title }}?');" style="display:inline;">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="id" value="{{ event.id }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="7" style="text-align: center;">No events found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
