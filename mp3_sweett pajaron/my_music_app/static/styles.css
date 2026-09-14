@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arutia - Music Player</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="video-background-container">
+        <video id="backgroundVideo" autoplay loop muted playsinline></video>
+        <div class="video-overlay"></div>
+    </div>
+
+    <div id="homePage" class="page active">
+        <header>
+            <h1>Daftar Lagu</h1>
+        </header>
+        <main>
+            <ul id="songList" class="song-list">
+                <li class="loading-songs">Memuat lagu...</li> 
+            </ul>
+        </main>
+    </div>
+
+    <div id="songDetailPage" class="page">
+        <button id="backToHomeFromDetailBtn" class="back-btn"><i class="fas fa-arrow-left"></i> Kembali</button>
+        <div class="song-detail-container">
+            <img id="detailAlbumArt" src="https://placehold.co/200x200/3a3a4e/e0e0e0?text=Art" alt="Album Art" class="detail-album-art">
+            <h2 id="detailTrackTitle">Judul Lagu</h2>
+            <p id="detailTrackArtist">Nama Artis</p>
+            <p id="detailAlbumName">Nama Album</p>
+            <button id="playFromDetailBtn" class="play-from-detail-btn"><i class="fas fa-play-circle"></i> Putar</button>
+        </div>
+    </div>
+
+    <div id="playerPage" class="page">
+        <button id="backToHomeBtn" class="back-btn"><i class="fas fa-arrow-left"></i> Kembali</button>
+        <div class="music-player-container">
+            <div class="music-player-box">
+                <div class="player-header">
+                    <img id="albumArt" src="https://placehold.co/100x100/3a3a4e/e0e0e0?text=Art" alt="Album Art" class="album-art-player">
+                    <div class="track-info-player">
+                        <h2 id="playerTrackTitle">Judul Lagu</h2>
+                        <p id="playerTrackArtist">Nama Artis</p>
+                    </div>
+                </div>
+                <div id="lyricsContainer" class="lyrics-container">
+                    <p>Lirik akan tampil di sini...</p>
+                </div>
+                <div class="player-controls">
+                    <div class="progress-section-player">
+                        <div id="playerProgressBarContainer" class="progress-bar-container-player">
+                            <div id="playerProgressBar" class="progress-bar-player"></div>
+                        </div>
+                        <div class="time-display-player">
+                            <span id="playerCurrentTime">0:00</span>
+                            <span id="playerTotalDuration">0:00</span>
+                        </div> 
+                    </div>
+                    <div class="main-controls-player">
+                        <button id="playerPrevBtn" class="control-btn-player"><i class="fas fa-backward-step"></i></button>
+                        <button id="playerPlayPauseBtn" class="control-btn-player play-pause-player"><i class="fas fa-play"></i></button>
+                        <button id="playerNextBtn" class="control-btn-player"><i class="fas fa-forward-step"></i></button>
+                    </div>
+                    <div class="secondary-controls-player">
+                        <button id="playerRepeatBtn" class="control-btn-player small-icon"><i class="fas fa-repeat"></i></button>
+                        <button id="playerShuffleBtn" class="control-btn-player small-icon"><i class="fas fa-shuffle"></i></button>
+                        <div class="volume-control-player">
+                            <i class="fas fa-volume-down volume-icon-player"></i>
+                            <input type="range" id="playerVolumeSlider" class="volume-slider-player" min="0" max="1" step="0.01" value="0.8">
+                            <i class="fas fa-volume-up volume-icon-player ml-1"></i>
+                        </div>
+                        <div class="playback-speed-control">
+                            <i class="fas fa-tachometer-alt speed-icon"></i>
+                            <input type="range" id="playerSpeedSlider" class="speed-slider" min="0.5" max="2.0" step="0.25" value="1.0">
+                            <span id="currentSpeedDisplay">1.0x</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="footer-credit">code by: @Arutia</p>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="audioPlayer"></audio>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
