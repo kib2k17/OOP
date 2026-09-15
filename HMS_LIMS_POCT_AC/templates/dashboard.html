@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block content %}<div class="d-flex justify-content-between align-items-center"><div><h2>Management Dashboard</h2><p class="text-muted">Operational view of POCT resources and compliance status.</p></div></div>
+<div class="row g-3">{% for label,value in dashboard_cards %}{% endfor %}
+<div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><small>Active Operators</small><h2>{{ active_operators }}</h2></div></div></div>
+<div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><small>Active Devices</small><h2>{{ active_devices }}</h2></div></div></div>
+<div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><small>Competency Due Soon</small><h2>{{ due_competencies }}</h2></div></div></div>
+<div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><small>Expired Competency</small><h2>{{ expired_competencies }}</h2></div></div></div>
+<div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><small>Failed QC</small><h2>{{ failed_qc }}</h2></div></div></div>
+<div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><small>Maintenance Due</small><h2>{{ maintenance_due }}</h2></div></div></div>
+<div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><small>Low Stock</small><h2>{{ low_stock }}</h2></div></div></div>
+<div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><small>Expired Inventory</small><h2>{{ expired_inventory }}</h2></div></div></div></div>
+<div class="card mt-4 shadow-sm"><div class="card-body"><h5>Competency Status</h5><canvas id="competencyChart" height="80"></canvas></div></div>
+{% endblock %}{% block scripts %}<script>new Chart(document.getElementById('competencyChart'),{type:'doughnut',data:{labels:['Current','Due Soon','Expired'],datasets:[{data:[{{ current_competencies }},{{ due_competencies }},{{ expired_competencies }}]}]},options:{responsive:true}});</script>{% endblock %}
