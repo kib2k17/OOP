@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minesweeper</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #fafafa; margin-top: 50px; }
+        .grid { display: grid; grid-template-columns: repeat(9, 40px); gap: 2px; justify-content: center; margin-top: 20px; }
+        .cell { width: 40px; height: 40px; background: #bdbdbd; border: 1px solid #7b7b7b; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
+        .cell.revealed { background: #e0e0e0; cursor: default; }
+        .cell.mine { background: red; }
+    </style>
+</head>
+<body>
+    <h1>Shawns Minesweeper Game</h1>
+    <button onclick="startNewGame()" style="padding: 8px 16px; font-size: 16px;">Restart Game</button>
+    <div id="grid" class="grid"></div>
+
+    <script>
+        let boardData = [];
+
+        async function startNewGame() {
+            const response = await fetch('/new-game');
+            boardData = await response.json();
+            const gridDiv = document.getElementById('grid');
+            gridDiv.innerHTML = '';
+
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.addEventListener('click', handleCellClick);
+                    gridDiv.appendChild(cell);
+                }
+            }
+        }
+
+        function handleCellClick(e) {
+            const cell = e.target;
+            const r = cell.dataset.row;
+            const c = cell.dataset.col;
+            const val = boardData[r][c];
+
+            if (cell.classList.contains('revealed')) return;
+
+            cell.classList.add('revealed');
+            if (val === -1) {
+                cell.classList.add('mine');
+                cell.innerText = '💣';
+                alert('💥 Game Over! 💥');
+                revealAllMines();
+            } else {
+                cell.innerText = val === 0 ? '' : val;
+            }
+        }
+
+        function revealAllMines() {
+            document.querySelectorAll('.cell').forEach(cell => {
+                const r = cell.dataset.row;
+                const c = cell.dataset.col;
+                if (boardData[r][c] === -1) {
+                    cell.classList.add('revealed', 'mine');
+                    cell.innerText = '💣';
+                }
+            });
+        }
+        startNewGame();
+    </script>
+</body>
+</html>
