@@ -1,46 +1,60 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
 {% block content %}
 <h2>Food & Dining Management</h2>
-<br>
 
-<div class="form-card">
-    <form action="{{ url_for('foods') }}" method="POST">
+<div class="form-card mt-16">
+    <form action="{{ url_for('foods') }}" method="POST" class="flex-form">
         <input type="hidden" name="action" value="add">
-        <div class="form-group">
-            <input type="text" name="name" class="form-control" placeholder="Item Name" required>
-        </div>
-        <div class="form-group">
-            <input type="text" name="category" class="form-control" placeholder="Category (e.g. Main Course, Beverage)" required>
-        </div>
-        <div class="form-group">
-            <input type="number" step="0.01" name="price" class="form-control" placeholder="Price ($)" required>
-        </div>
-        <div class="form-group">
-            <select name="status" class="form-control">
-                <option value="Available">Available</option>
-                <option value="Out of Stock">Out of Stock</option>
-            </select>
-        </div>
-        <button type="submit" class="btn">Add Food Item</button>
+        
+        <input type="text" name="id" placeholder="Item ID" class="form-control w-sm" required>
+        <input type="text" name="name" placeholder="Item Name" class="form-control w-lg" required>
+        
+        <select name="category" class="form-control w-md" required>
+            <option value="" disabled selected hidden>Category</option>
+            <option value="Breakfast">Breakfast</option>
+            <option value="Main Course">Main Course</option>
+            <option value="Side Dish">Side Dish</option>
+            <option value="Beverage">Beverage</option>
+            <option value="Dessert">Dessert</option>
+        </select>
+
+        <input type="number" step="0.01" name="price" placeholder="Price (₱)" class="form-control w-sm" required>
+        
+        <select name="meal_time" class="form-control w-md">
+            <option value="All Day">All Day</option>
+            <option value="Breakfast">Breakfast</option>
+            <option value="Lunch">Lunch</option>
+            <option value="Dinner">Dinner</option>
+            <option value="Snacks">Snacks</option>
+        </select>
+
+        <select name="status" class="form-control w-md">
+            <option value="Available">Available</option>
+            <option value="Unavailable">Unavailable</option>
+        </select>
+
+        <button type="submit" class="btn btn-primary-dark">Add Food Item</button>
     </form>
 </div>
 
-<div class="toolbar">
-    <form method="GET" action="{{ url_for('foods') }}" class="search-bar" style="display: flex; gap: 8px;">
-        <input type="text" name="search" placeholder="Search menu..." value="{{ request.args.get('search', '') }}">
-        <button type="submit" class="btn">Filter</button>
+<div class="toolbar mt-16">
+    <form method="GET" action="{{ url_for('foods') }}" class="search-bar flex-form">
+        <input type="text" name="search" placeholder="Search food items..." value="{{ request.args.get('search', '') }}" class="form-control w-lg">
+        <button type="submit" class="btn btn-primary-dark">Filter</button>
         {% if request.args.get('search') %}
-            <a href="{{ url_for('foods') }}" class="btn" style="background-color: #25a27a; text-decoration: none; display: inline-flex; align-items: center;">Refresh</a>
+            <a href="{{ url_for('foods') }}" class="btn">Refresh</a>
         {% endif %}
     </form>
 </div>
 
-<table class="data-table">
+<table class="data-table mt-16">
     <thead>
         <tr>
-            <th>ID</th>
-            <th>Item Name</th>
+            <th>Item ID</th>
+            <th>Name</th>
             <th>Category</th>
+            <th>Meal Time</th>
             <th>Price</th>
             <th>Status</th>
             <th>Actions</th>
@@ -52,19 +66,16 @@
             <td>{{ food.id }}</td>
             <td>{{ food.name }}</td>
             <td>{{ food.category }}</td>
-            <td>${{ food.price }}</td>
-            <td><span class="status-badge {{ food.status | lower | replace(' ', '-') }}">{{ food.status }}</span></td>
+            <td>{{ food.meal_time }}</td>
+            <td>₱{{ "%.2f"|format(food.price) }}</td>
+            <td><span class="badge">{{ food.status }}</span></td>
             <td>
-                <form action="{{ url_for('foods') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete {{ food.name }}?');" style="display:inline;">
+                <form action="{{ url_for('foods') }}" method="POST">
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="id" value="{{ food.id }}">
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Delete food item?')">Delete</button>
                 </form>
             </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="6" style="text-align: center;">No menu items found.</td>
         </tr>
         {% endfor %}
     </tbody>

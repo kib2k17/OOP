@@ -1,195 +1,179 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from datetime import datetime
 from functools import wraps
-import json
-import os
 
 app = Flask(__name__)
 app.secret_key = 'gigahotel_secret_key_123'
 
-# --- DOMAIN MODELS ---
-
+# --- model classes ---
 class Room:
+    VALID_STATUSES = {"Available", "Occupied", "Maintenance"}
+
     def __init__(self, room_id, room_type, price, status="Available"):
         self.id = str(room_id)
-        self.type = room_type
-        self.price = float(price)
+        self.type = str(room_type)
+        self.price = price
         self.status = status
+
+    @property
+    def price(self):
+        return self._price
+
+    @price.setter
+    def price(self, value):
+        try:
+            val = float(value)
+            self._price = val if val >= 0 else 0.0
+        except (ValueError, TypeError):
+            self._price = 0.0
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        val = str(value).title()
+        self._status = val if val in self.VALID_STATUSES else "Available"
 
     def to_dict(self):
         return {"id": self.id, "type": self.type, "price": self.price, "status": self.status}
 
-    @classmethod
-    def from_dict(cls, data):
-        return cls(data.get("id", ""), data.get("type", ""), data.get("price", 0), data.get("status", "Available"))
-
-
+# --- OOP guest ---
 class Guest:
-    def __init__(self, guest_id, name, email, room="N/A", status="Checked In"):
+    VALID_STATUSES = {"Reserved", "Checked In", "Checked Out"}
+
+    def __init__(self, guest_id, name, email, room="N/A", status="Checked In", time_in="N/A", time_out="N/A"):
         self.id = str(guest_id)
-        self.name = name
-        self.email = email
+        self.name = str(name)
+        self.email = str(email)
         self.room = str(room)
         self.status = status
+        self.time_in = str(time_in) if time_in else "N/A"
+        self.time_out = str(time_out) if time_out else "N/A"
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        val = str(value).title()
+        self._status = val if val in self.VALID_STATUSES else "Checked In"
 
     def to_dict(self):
-        return {"id": self.id, "name": self.name, "email": self.email, "room": self.room, "status": self.status}
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "room": self.room,
+            "status": self.status,
+            "time_in": self.time_in,
+            "time_out": self.time_out,
+        }
 
-    @classmethod
-    def from_dict(cls, data):
-        return cls(data.get("id", ""), data.get("name", ""), data.get("email", ""), data.get("room", "N/A"), data.get("status", "Checked In"))
 
-
+# --- OOP food ---
 class Food:
-    def __init__(self, food_id, name, price, category, status="Available"):
+    VALID_MEAL_TIMES = {"Breakfast", "Lunch", "Dinner", "Snacks", "All Day"}
+
+    def __init__(self, food_id, name, price, category, status="Available", meal_time="All Day"):
         self.id = str(food_id)
-        self.name = name
-        self.price = float(price)
-        self.category = category
-        self.status = status
+        self.name = str(name)
+        self.price = price
+        self.category = str(category)
+        self.status = str(status)
+        self.meal_time = meal_time
+
+    @property
+    def price(self):
+        return self._price
+
+    @price.setter
+    def price(self, value):
+        try:
+            val = float(value)
+            self._price = val if val >= 0 else 0.0
+        except (ValueError, TypeError):
+            self._price = 0.0
+
+    @property
+    def meal_time(self):
+        return self._meal_time
+
+    @meal_time.setter
+    def meal_time(self, value):
+        val = str(value).title() if value else "All Day"
+        self._meal_time = val if val in self.VALID_MEAL_TIMES else "All Day"
 
     def to_dict(self):
-        return {"id": self.id, "name": self.name, "price": self.price, "category": self.category, "status": self.status}
+        return {
+            "id": self.id,
+            "name": self.name,
+            "price": self.price,
+            "category": self.category,
+            "status": self.status,
+            "meal_time": self.meal_time
+        }
 
-    @classmethod
-    def from_dict(cls, data):
-        return cls(data.get("id", ""), data.get("name", ""), data.get("price", 0), data.get("category", "General"), data.get("status", "Available"))
-
-
-class Event:
-    def __init__(self, event_id, title, date, location, time="09:00 AM", status="Upcoming"):
-        self.id = str(event_id)
-        self.title = title
-        self.date = date
-        self.location = location
-        self.time = time
-        self.status = status
-
-    def to_dict(self):
-        return {"id": self.id, "title": self.title, "date": self.date, "location": self.location, "time": self.time, "status": self.status}
-
-    @classmethod
-    def from_dict(cls, data):
-        return cls(data.get("id", ""), data.get("title", ""), data.get("date", ""), data.get("location", ""), data.get("time", "09:00 AM"), data.get("status", "Upcoming"))
-
-
-# --- HOTEL MANAGER CLASS ---
 
 class HotelManager:
-    def __init__(self, data_file='data.json', archive_file='archive.json'):
-        self.data_file = data_file
-        self.archive_file = archive_file
+    def __init__(self):
         self.rooms = []
         self.guests = []
         self.foods = []
-        self.events = []
-        self.load_data()
+        self.archived_items = []
 
-    def load_data(self):
-        if not os.path.exists(self.data_file):
-            return
-
-        with open(self.data_file, 'r') as f:
-            try:
-                data = json.load(f)
-                self.rooms = [Room.from_dict(r) for r in data.get('rooms', [])]
-                self.guests = [Guest.from_dict(g) for g in data.get('guests', [])]
-                self.foods = [Food.from_dict(f_item) for f_item in data.get('foods', [])]
-                self.events = [Event.from_dict(e) for e in data.get('events', [])]
-            except json.JSONDecodeError:
-                pass
-
-    def save_data(self):
-        data = {
-            "rooms": [r.to_dict() for r in self.rooms],
-            "guests": [g.to_dict() for g in self.guests],
-            "foods": [f.to_dict() for f in self.foods],
-            "events": [e.to_dict() for e in self.events]
-        }
-        with open(self.data_file, 'w') as f:
-            json.dump(data, f, indent=4)
-
-    def archive_item(self, item_type, item_obj):
-        archive_data = {"deleted_rooms": [], "deleted_guests": [], "deleted_foods": [], "deleted_events": []}
-        if os.path.exists(self.archive_file):
-            with open(self.archive_file, 'r') as f:
-                try:
-                    archive_data = json.load(f)
-                except json.JSONDecodeError:
-                    pass
-
-        key = f"deleted_{item_type}s"
-        archive_data.setdefault(key, []).append(item_obj.to_dict())
-
-        with open(self.archive_file, 'w') as f:
-            json.dump(archive_data, f, indent=4)
-
-    # --- ROOM OPERATIONS ---
+# --- room operation ---
     def add_room(self, room_id, room_type, price, status):
         self.rooms.append(Room(room_id, room_type, price, status))
-        self.save_data()
 
     def delete_room(self, room_id):
         for room in self.rooms:
             if room.id == str(room_id):
-                self.archive_item('room', room)
+                self.archived_items.append(room.to_dict())
                 break
         self.rooms = [r for r in self.rooms if r.id != str(room_id)]
-        self.save_data()
 
     def update_room_status(self, room_id, status):
         for room in self.rooms:
             if room.id == str(room_id):
                 room.status = status
                 break
-        self.save_data()
 
-    # --- GUEST OPERATIONS ---
-    def add_guest(self, name, email, room_id, status):
+# --- guest operation ---
+    def add_guest(self, name, email, room="N/A", room_number=None, status="Checked In", time_in="N/A", time_out="N/A"):
+        assigned_room = room_number or room or "N/A"
+        
         existing_ids = [int(g.id.split('-')[1]) for g in self.guests if g.id.startswith('G-') and '-' in g.id]
         new_id = f"G-{max(existing_ids, default=1000) + 1}"
         
-        self.guests.append(Guest(new_id, name, email, room_id, status))
-        if room_id and room_id != "N/A":
-            self.update_room_status(room_id, "Occupied")
-        self.save_data()
+        guest = Guest(new_id, name, email, assigned_room, status, time_in, time_out)
+        self.guests.append(guest)
+
+        if assigned_room and assigned_room != "N/A":
+            self.update_room_status(assigned_room, "Occupied")
 
     def delete_guest(self, guest_id):
         for guest in self.guests:
             if guest.id == str(guest_id):
                 if guest.room and guest.room != "N/A":
                     self.update_room_status(guest.room, "Available")
-                self.archive_item('guest', guest)
+                self.archived_items.append(guest.to_dict())
                 break
         self.guests = [g for g in self.guests if g.id != str(guest_id)]
-        self.save_data()
 
-    # --- FOOD OPERATIONS ---
-    def add_food(self, food_id, name, price, category):
-        self.foods.append(Food(food_id, name, price, category))
-        self.save_data()
+# --- food operation ---
+    def add_food(self, food_id, name, price, category, status="Available", meal_time="All Day"):
+        self.foods.append(Food(food_id, name, price, category, status, meal_time))
 
     def delete_food(self, food_id):
         for food in self.foods:
             if food.id == str(food_id):
-                self.archive_item('food', food)
+                self.archived_items.append(food.to_dict())
                 break
         self.foods = [f for f in self.foods if f.id != str(food_id)]
-        self.save_data()
 
-    # --- EVENT OPERATIONS ---
-    def add_event(self, event_id, title, date, location):
-        self.events.append(Event(event_id, title, date, location))
-        self.save_data()
-
-    def delete_event(self, event_id):
-        for event in self.events:
-            if event.id == str(event_id):
-                self.archive_item('event', event)
-                break
-        self.events = [e for e in self.events if e.id != str(event_id)]
-        self.save_data()
-
-    # --- REPORTS ---
     def get_stats(self):
         occupied = [r for r in self.rooms if r.status == 'Occupied']
         return {
@@ -202,6 +186,7 @@ class HotelManager:
 
 manager = HotelManager()
 
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -211,7 +196,13 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- ROUTES ---
+@app.context_processor
+def inject_global_stats():
+    stats = manager.get_stats()
+    return dict(total_profit=stats['total_profit'])
+
+
+# --- login routes ---
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -224,22 +215,29 @@ def login():
         flash("Invalid username/password", "error")
     return render_template('login.html')
 
+# --- logout routes ---
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# --- dashboard routes ---
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    manager.load_data()
     stats = manager.get_stats()
-    return render_template('dashboard.html', total_rooms=stats['total_rooms'], occupied=stats['occupied'], guests_count=stats['total_guests'])
+    return render_template(
+        'dashboard.html',
+        total_rooms=stats['total_rooms'],
+        occupied=stats['occupied'],
+        guests_count=stats['total_guests'],
+        total_profit=stats['total_profit']
+    )
 
+# --- room routes ---
 @app.route('/rooms', methods=['GET', 'POST'])
 @login_required
 def rooms():
-    manager.load_data()
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'add':
@@ -254,31 +252,46 @@ def rooms():
     filtered = [r for r in manager.rooms if query in r.id.lower() or query in r.type.lower()] if query else manager.rooms
     return render_template('rooms.html', rooms=[r.to_dict() for r in filtered])
 
+# --- guests routes ---
 @app.route('/guests', methods=['GET', 'POST'])
 @login_required
 def guests():
-    manager.load_data()
     if request.method == 'POST':
-        action = request.form.get('action')
+        action, form = request.form.get('action'), request.form.get
+        
         if action == 'add':
-            manager.add_guest(request.form.get('name'), request.form.get('email'), request.form.get('room'), request.form.get('status'))
-        elif action == 'delete':
-            manager.delete_guest(request.form.get('id'))
+            
+            now = datetime.now().strftime('%Y-%m-%dT%H:%M')
+            manager.add_guest(
+                name=form('name'), email=form('email'), room=form('room'),
+                status=form('status', 'Checked In'),
+                time_in=form('time_in') or now, time_out=form('time_out') or now,
+            )
+        elif action == 'checkout' and form('id'):
+            manager.delete_guest(form('id'))
+            
         return redirect(url_for('guests'))
 
-    query = request.args.get('search', '').lower()
-    filtered = [g for g in manager.guests if query in g.id.lower() or query in g.name.lower()] if query else manager.guests
-    available_rooms = [r for r in manager.rooms if r.status == 'Available']
-    return render_template('guests.html', guests=[g.to_dict() for g in filtered], available_rooms=[r.to_dict() for r in available_rooms])
+    occupied = {str(g.room) for g in manager.guests if g.status == 'Checked In'}
+    available_rooms = [r for r in manager.rooms if r.status == 'Available' and str(r.id) not in occupied]
 
+    return render_template('guests.html', guests=manager.guests, available_rooms=available_rooms, available_foods=manager.foods)
+
+# --- foods routes ---
 @app.route('/foods', methods=['GET', 'POST'])
 @login_required
 def foods():
-    manager.load_data()
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'add':
-            manager.add_food(request.form.get('id'), request.form.get('name'), request.form.get('price', 0), request.form.get('category'))
+            manager.add_food(
+                request.form.get('id'),
+                request.form.get('name'),
+                request.form.get('price', 0),
+                request.form.get('category'),
+                request.form.get('status', 'Available'),
+                request.form.get('meal_time', 'All Day')
+            )
         elif action == 'delete':
             manager.delete_food(request.form.get('id'))
         return redirect(url_for('foods'))
@@ -287,32 +300,16 @@ def foods():
     filtered = [f for f in manager.foods if query in f.id.lower() or query in f.name.lower()] if query else manager.foods
     return render_template('foods.html', foods=[f.to_dict() for f in filtered])
 
-@app.route('/events', methods=['GET', 'POST'])
-@login_required
-def events():
-    manager.load_data()
-    if request.method == 'POST':
-        action = request.form.get('action')
-        if action == 'add':
-            manager.add_event(request.form.get('id'), request.form.get('title'), request.form.get('date'), request.form.get('location'))
-        elif action == 'delete':
-            manager.delete_event(request.form.get('id'))
-        return redirect(url_for('events'))
-
-    query = request.args.get('search', '').lower()
-    filtered = [e for e in manager.events if query in e.id.lower() or query in e.title.lower()] if query else manager.events
-    return render_template('events.html', events=[e.to_dict() for e in filtered])
-
+# --- bookings routes ---
 @app.route('/bookings', methods=['GET', 'POST'])
 @login_required
 def bookings():
-    manager.load_data()
     return render_template('bookings.html', bookings=[g.to_dict() for g in manager.guests])
 
+# --- reports routes ---
 @app.route('/reports')
 @login_required
 def reports():
-    manager.load_data()
     return render_template('reports.html', **manager.get_stats())
 
 if __name__ == '__main__':

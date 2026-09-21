@@ -1,42 +1,45 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
 {% block content %}
 <h2>Room Management</h2>
-<br>
 
-<div class="form-card">
-    <form action="{{ url_for('rooms') }}" method="POST">
+<div class="form-card mt-16">
+    <form action="{{ url_for('rooms') }}" method="POST" class="flex-form">
         <input type="hidden" name="action" value="add">
-        <div class="form-group">
-            <input type="number" min="1" name="id" class="form-control" placeholder="Room #" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-        </div>
-        <div class="form-group">
-            <input type="text" name="type" class="form-control" placeholder="Room Type" required>
-        </div>
-        <div class="form-group">
-            <input type="number" step="0.01" name="price" class="form-control" placeholder="Price ($)" required>
-        </div>
-        <div class="form-group">
-            <select name="status" class="form-control">
-                <option value="Available">Available</option>
-                <option value="Occupied">Occupied</option>
-                <option value="Maintenance">Maintenance</option>
-            </select>
-        </div>
-        <button type="submit" class="btn">Add Room</button>
+        
+        <input type="text" name="id" placeholder="Room No." class="form-control w-sm" required>
+        
+        <select name="type" class="form-control w-md" required>
+            <option value="" disabled selected hidden>Room Type</option>
+            <option value="Single">Single</option>
+            <option value="Double">Double</option>
+            <option value="Suite">Suite</option>
+            <option value="Deluxe">Deluxe</option>
+        </select>
+
+        <input type="number" step="0.01" name="price" placeholder="Price/Night (₱)" class="form-control w-md" required>
+        
+        <select name="status" class="form-control w-md">
+            <option value="Available">Available</option>
+            <option value="Occupied">Occupied</option>
+            <option value="Maintenance">Maintenance</option>
+        </select>
+
+        <button type="submit" class="btn btn-primary-dark">Add Room</button>
     </form>
 </div>
 
-<div class="toolbar">
-    <form method="GET" action="{{ url_for('rooms') }}" class="search-bar" style="display: flex; gap: 8px;">
-        <input type="text" name="search" placeholder="Search rooms..." value="{{ request.args.get('search', '') }}">
-        <button type="submit" class="btn">Filter</button>
+<div class="toolbar mt-16">
+    <form method="GET" action="{{ url_for('rooms') }}" class="search-bar flex-form">
+        <input type="text" name="search" placeholder="Search rooms..." value="{{ request.args.get('search', '') }}" class="form-control w-lg">
+        <button type="submit" class="btn btn-primary-dark">Filter</button>
         {% if request.args.get('search') %}
-            <a href="{{ url_for('rooms') }}" class="btn" style="text-decoration: none; display: inline-flex; align-items: center;">Refresh</a>
+            <a href="{{ url_for('rooms') }}" class="btn">Refresh</a>
         {% endif %}
     </form>
 </div>
 
-<table class="data-table">
+<table class="data-table mt-16">
     <thead>
         <tr>
             <th>Room Number</th>
@@ -49,21 +52,17 @@
     <tbody>
         {% for room in rooms %}
         <tr>
-            <td>{{ room.id }}</td>
+            <td>{{ room.room_number if room.room_number else room.number if room.number else room.id }}</td>
             <td>{{ room.type }}</td>
-            <td>${{ room.price }}</td>
-            <td><span class="status-badge {{ room.status | lower }}">{{ room.status }}</span></td>
+            <td>₱{{ "%.2f"|format(room.price) if room.price else "0.00" }}</td>
+            <td><span class="badge">{{ room.status }}</span></td>
             <td>
-                <form action="{{ url_for('rooms') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete room {{ room.id }}?');" style="display:inline;">
+                <form action="{{ url_for('rooms') }}" method="POST">
                     <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" value="{{ room.id }}">
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <input type="hidden" name="id" value="{{ room.id if room.id else room.room_number }}">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Delete room?')">Delete</button>
                 </form>
             </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="5" style="text-align: center;">No rooms found.</td>
         </tr>
         {% endfor %}
     </tbody>
