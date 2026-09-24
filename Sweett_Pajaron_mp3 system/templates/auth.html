@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ 'Create account' if mode == 'register' else 'Log in' }} | Music Library</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      align-items: center;
+      background: #0d0e15;
+      color: #ffffff;
+      display: flex;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      justify-content: center;
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .auth-card {
+      background: #141622;
+      border: 1px solid #292d43;
+      border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      max-width: 420px;
+      padding: 36px;
+      width: 100%;
+    }
+
+    .brand {
+      color: #00f2fe;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    h1 { font-size: 1.8rem; margin: 0 0 8px; }
+    .subtitle { color: #94a3b8; margin: 0 0 28px; }
+
+    label {
+      color: #cbd5e1;
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin: 16px 0 8px;
+    }
+
+    input {
+      background: #0d0e15;
+      border: 1px solid #343951;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 1rem;
+      padding: 12px;
+      width: 100%;
+    }
+
+    input:focus { border-color: #00f2fe; outline: 2px solid rgba(0, 242, 254, 0.2); }
+
+    button {
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      border: 0;
+      border-radius: 8px;
+      color: #061014;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-top: 24px;
+      padding: 12px;
+      width: 100%;
+    }
+
+    .error {
+      background: rgba(248, 113, 113, 0.12);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      border-radius: 8px;
+      color: #fca5a5;
+      font-size: 0.9rem;
+      padding: 10px 12px;
+    }
+
+    .switch { color: #94a3b8; font-size: 0.9rem; margin: 24px 0 0; text-align: center; }
+    a { color: #00f2fe; }
+  </style>
+</head>
+<body>
+  <main class="auth-card">
+    <p class="brand">Music Library</p>
+    <h1>{{ 'Create your account' if mode == 'register' else 'Welcome back' }}</h1>
+    <p class="subtitle">{{ 'Register to start listening.' if mode == 'register' else 'Log in to continue to your music.' }}</p>
+
+    {% if error %}
+      <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <form method="post">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}" minlength="6" required>
+
+      <button type="submit">{{ 'Register' if mode == 'register' else 'Log in' }}</button>
+    </form>
+
+    <p class="switch">
+      {% if mode == 'register' %}
+        Already have an account? <a href="{{ url_for('login') }}">Log in</a>
+      {% else %}
+        New here? <a href="{{ url_for('register') }}">Create an account</a>
+      {% endif %}
+    </p>
+  </main>
+</body>
+</html>
