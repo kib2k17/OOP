@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shawn's Minesweeper</title>
+    <style> 
+        :root {
+            --bg-color: #2a2431;      /* background color */
+            --panel-color: #2a2a35;      /* panel color */
+            --cell-unrevealed: #4a4a5a;
+            --cell-revealed: #37382d;
+            --cell-border: #14141a;
+            --text-color: #ffffff;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  /* font */
+            text-align: center; 
+            background: var(--bg-color); 
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--panel-color);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        h1 { margin-top: 0; color: #00adb5; }
+
+        /* Scoreboard & Controls Styling */
+        .panel {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .score-box span { font-weight: bold; color: #00adb5; }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            align-items: center;
+        }
+
+        select, button {
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: none;
+            background: #00adb5;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        select { background: #393e46; color: white; }
+        button:hover { background: #008c95; }
+
+        /* Dynamic Grid Layout */
+        .grid { 
+            display: grid; 
+            gap: 2px; 
+            justify-content: center; 
+            margin: 20px auto;
+            background: var(--cell-border);
+            padding: 4px;
+            border-radius: 6px;
+            width: max-content;
+        }
+
+        /* Interactive Cell Styling */
+        .cell { 
+            width: 36px; 
+            height: 36px; 
+            background: var(--cell-unrevealed); 
+            border-radius: 3px;
+            font-weight: bold; 
+            font-size: 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            user-select: none; 
+            transition: background 0.1s;
+        }
+        .cell:not(.revealed):hover { background: #5a5a70; }
+        
+        .cell.revealed { background: var(--cell-revealed); cursor: default; }
+        .cell.mine { background: #ff2e63; }
+        .cell.flagged { background: #f9d56e; color: #000; }
+
+        /* Number Colors */
+        .n-1 { color: #30e3ca; }
+        .n-2 { color: #a5d6a7; }
+        .n-3 { color: #ff9f43; }
+        .n-4 { color: #ff2e63; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Shawn's Minesweeper</h1>
+
+    <!-- Difficulty Settings Selector -->
+    <div class="controls">
+        <label for="difficulty">Difficulty: </label>
+        <select id="difficulty" onchange="startNewGame()">
+            <option value="easy">Easy (9x9, 10 Mines)</option>
+            <option value="medium" selected>Medium (9x9, 20 Mines)</option>
+            <option value="hard">Hard (12x12, 35 Mines)</option>
+        </select>
+        <button onclick="startNewGame()">Restart</button>
+    </div>
+
+    <!-- Scoreboard and Active Status Display -->
+    <div class="panel">
+        <div class="score-box">Wins: <span id="win-count">0</span></div>
+        <div class="score-box">Losses: <span id="loss-count">0</span></div>
+        <div class="score-box">Flags Placed: <span id="flag-count">0</span></div>
+    </div>
+
+    <div id="grid" class="grid"></div>
+</div>
+
+<script>
+    let boardData = [];
+    let gridSize = 9;
+    let numMines = 20;
+    let gameOver = false;
+    let wins = parseInt(localStorage.getItem('ms_wins')) || 0;
+    let losses = parseInt(localStorage.getItem('ms_losses')) || 0;
+
+    // Set configuration maps based on difficulty selection
+    const configurations = {
+        easy: { size: 9, mines: 10 },
+        medium: { size: 9, mines: 20 },
+        hard: { size: 12, mines: 35 }
+    };
+
+    function updateScoreboardDisplay() {
+        document.getElementById('win-count').innerText = wins;
+        document.getElementById('loss-count').innerText = losses;
+        updateFlagCount();
+    }
+
+    function updateFlagCount() {
+        const flaggedCount = document.querySelectorAll('.cell.flagged').length;
+        document.getElementById('flag-count').innerText = `${flaggedCount}/${numMines}`;
+    }
+
+    async function startNewGame() {
+        gameOver = false;
+        const difficulty = document.getElementById('difficulty').value;
+        gridSize = configurations[difficulty].size;
+        numMines = configurations[difficulty].mines;
+
+        updateScoreboardDisplay();
+
+        // Fetch custom setup dynamically from Flask endpoints
+        const response = await fetch(`/new-game?size=${gridSize}&mines=${numMines}`);
+        boardData = await response.json();
+        
+        const gridDiv = document.getElementById('grid');
+        gridDiv.innerHTML = '';
+        
+        // Dynamically style the grid dimensions using CSS variables via javascript
+        gridDiv.style.gridTemplateColumns = `repeat(${gridSize}, 36px)`;
+
+        for (let r = 0; r < gridSize; r++) {
+            for (let c = 0; c < gridSize; c++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.row = r;
+                cell.dataset.col = c;
+                
+                // Left click reveals cells
+                cell.addEventListener('click', handleCellClick);
+                // Right click triggers Flag placement
+                cell.addEventListener('contextmenu', handleRightClick);
+                
+                gridDiv.appendChild(cell);
+            }
+        }
+    }
+
+    function handleCellClick(e) {
+        if (gameOver) return;
+        const cell = e.currentTarget;
+        if (cell.classList.contains('revealed') || cell.classList.contains('flagged')) return;
+
+        const r = parseInt(cell.dataset.row);
+        const c = parseInt(cell.dataset.col);
+        revealCell(r, c);
+        checkWinCondition();
+    }
+
+    // Flagging system toggle triggered by contextual contextmenu (Right click)
+    function handleRightClick(e) {
+        e.preventDefault(); // Stop native browser window dropdown from opening
+        if (gameOver) return;
+        
+        const cell = e.currentTarget;
+        if (cell.classList.contains('revealed')) return;
+
+        cell.classList.toggle('flagged');
+        cell.innerText = cell.classList.contains('flagged') ? '🚩' : '';
+        updateFlagCount();
+    }
+
+    function revealCell(r, c) {
+        // Validate coordinates bounded within current setup grid limits 
+        if (r < 0 || r >= gridSize || c < 0 || c >= gridSize) return;
+  
+        const cell = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+        if (!cell || cell.classList.contains('revealed')) return;
+
+        cell.classList.add('revealed');
+        cell.classList.remove('flagged'); // Auto clear flags on step actions
+        const val = boardData[r][c];
+
+        if (val === -1) {
+            triggerGameOver();
+        } else if (val === 0) {
+            cell.innerText = '';
+            // if cell beside has a value of 0 then skip
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    revealCell(r + dr, c + dc);
+                }
+            }
+        } else {
+            cell.innerText = val;
+            cell.classList.add(`n-${val}`);
+        }
+    }
+
+    function triggerGameOver() {
+        gameOver = true;
+        losses++;
+        localStorage.setItem('ms_losses', losses);
+        updateScoreboardDisplay();
+        
+        revealAllMines();
+        setTimeout(() => alert('💥 Game Over! 💥'), 10);
+    }
+
+    function revealAllMines() {
+        document.querySelectorAll('.cell').forEach(cell => {
+            const r = cell.dataset.row;
+            const c = cell.dataset.col;
+            if (boardData[r][c] === -1) {
+                cell.classList.add('revealed', 'mine');
+                cell.innerText = '💣';
+            }
+        });
+    }
+
+    function checkWinCondition() {
+        const totalCells = gridSize * gridSize;
+        const revealedCount = document.querySelectorAll('.cell.revealed').length;
+
+        // Player wins if all safe squares have been successfully revealed
+        if (revealedCount === totalCells - numMines && !gameOver) {
+            gameOver = true;
+            wins++;
+            localStorage.setItem('ms_wins', wins);
+            updateScoreboardDisplay();
+            setTimeout(() => alert('🎉 Congratulations, You Won! 🎉'), 10);
+        }
+    }
+
+    // Initialize baseline engine startup properties
+    startNewGame();
+</script>
+</body>
+</html>
