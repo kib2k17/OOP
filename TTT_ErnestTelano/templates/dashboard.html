@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<nav>
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('matchmaking') }}">Play Game</a></li>
+        <li><a href="{{ url_for('bot') }}">Play Bot</a></li>
+        <li><a href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="container">
+
+    <h1>Dashboard</h1>
+
+    <h2>Welcome, {{ user.username }}!</h2>
+
+    <div class="card">
+        <h3>Your PVP Stats</h3>
+
+        <p>Wins: {{ user.wins }}</p>
+        <p>Losses: {{ user.losses }}</p>
+        <p>Draws: {{ user.draws }}</p>
+    </div>
+
+    <div class="card">
+        <h3>Bot Stats</h3>
+
+        <p>Wins: {{ user.bot_wins }}</p>
+        <p>Losses: {{ user.bot_losses }}</p>
+        <p>Draws: {{ user.bot_draws }}</p>
+    </div>
+
+    <div class="card">
+        <h3>Play</h3>
+
+        <a href="{{ url_for('matchmaking') }}">
+            <button>Play Against Player</button>
+        </a>
+
+        <a href="{{ url_for('bot') }}">
+            <button>Play Against Bot</button>
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>
